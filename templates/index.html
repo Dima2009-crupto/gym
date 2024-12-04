@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Gym Tracker</h1>
+    <form id="workout-form">
+        <label for="date">Date:</label>
+        <input type="date" id="date" required>
+        
+        <label for="exercise">Exercise:</label>
+        <input type="text" id="exercise" required>
+        
+        <label for="duration">Duration (minutes):</label>
+        <input type="number" id="duration" required>
+        
+        <button type="submit">Save Workout</button>
+    </form>
+    
+    <h2>Your Workouts</h2>
+    <ul id="workouts-list"></ul>
+
+    <script>
+        const form = document.getElementById('workout-form');
+        const workoutsList = document.getElementById('workouts-list');
+
+        
+        async function loadWorkouts() {
+            const response = await fetch('/api/workouts');
+            const workouts = await response.json();
+            workoutsList.innerHTML = '';
+            workouts.forEach(([id, date, exercise, duration]) => {
+                const li = document.createElement('li');
+                li.textContent = `${date} - ${exercise} (${duration} minutes)`;
+                workoutsList.appendChild(li);
+            });
+        }
+
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const date = document.getElementById('date').value;
+            const exercise = document.getElementById('exercise').value;
+            const duration = document.getElementById('duration').value;
+
+            const response = await fetch('/api/workouts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ date, exercise, duration }),
+            });
+
+            if (response.ok) {
+                await loadWorkouts();
+                form.reset();
+            }
+        });
+
+        
+        loadWorkouts();
+    </script>
+</body>
+</html>
+
+
